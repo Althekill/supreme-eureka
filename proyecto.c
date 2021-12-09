@@ -1,4 +1,4 @@
-#include "cmemcounter.h"
+//#include "cmemcounter.h"
 #include <stdio.h>
 #include<stdint.h>
 #include<stdlib.h>
@@ -12,13 +12,10 @@ int string_a_entero(char* str);
 float string_a_float(char* str);
 char* columna(char* linea,int num_columna);
 float fl_comparar(float* medias, int CPK, int plaquetas, float creatinina, int sodio);
+float obtener_riesgo(float valor, float min, float max, float newmin, float newmax, float overflow_max, float overflow_min);
 void start();
-
 typedef uint8_t bool;
 float *fl_W(int* datos,bool anemia, bool diabetes, bool presion_alta, bool hombre, bool fuma,int edad, int CPK, int plaquetas, float creatinina, int sodio);
-
-
-
 int main(){
 uint8_t z=0;
 //Bucle infinito del menu
@@ -53,7 +50,6 @@ switch (opcion){
 }
 return 0;
 }
-
 void start(){
     //Pedir los datos
     bool x[5];
@@ -94,23 +90,7 @@ void start(){
     float fl_riesgo_final=fl_comparar(fl_medias,creatinine_phosphokinase,platelets,serum_creatinine,serum_sodium);
     char *salida;
     int i;
-    switch((int)roundf(fl_riesgo_final)){
-        case 1:
-        i=18;
-        break;
-        case 2:
-        i=19;
-        break;
-        case 3:
-        i=20;
-        break;
-        case 4:
-        i=21;
-        break;
-        case 5:
-        i=22;
-        break;
-    }
+    i=17+(int)roundf(fl_riesgo_final);
     salida=linea(i,"frases.txt");
     printf("\n%s",salida);
     free(salida);
@@ -169,48 +149,30 @@ float fl_comparar(float* medias, int CPK, int plaquetas, float creatinina, int s
     //Para hacer la conversion a un rango de 1-5, se obtiene un factor de proporcion
     float riesgo[4];
     //CPK
-    int in_newmin = 3;
-    int in_rango=in_min_max_CPK[1]-in_min_max_CPK[0];
-    float factor = (float)(5-in_newmin)/(float)in_rango; 
-    riesgo[0] = ((CPK-in_min_max_CPK[0])*factor)+in_newmin;
-    if (riesgo[0] < 1) riesgo[0]=1;
-    if (riesgo[0] > 5) riesgo[0]=5;
-    printf("\nRango: %i, Factor: %f, Riesgo: %f",in_rango,factor,riesgo[0]);
-    printf("\nMin CPK: %i, Max CPK: %i, User Value: %i, Risk [1-5]: %f",in_min_max_CPK[0],in_min_max_CPK[1],CPK,riesgo[0]);
+    riesgo[0]=obtener_riesgo((float)CPK,(float)in_min_max_CPK[0],(float)in_min_max_CPK[1],3.0,5.0,1.0,5.0);
+    //printf("\nMin CPK: %i, Max CPK: %i, User Value: %i, Risk [1-5]: %f",in_min_max_CPK[0],in_min_max_CPK[1],CPK,riesgo[0]);
     //Plaquetas
-    float fl_rango=fl_min_max_plaquetas[1]-fl_min_max_plaquetas[0];
-    factor = (float)(5-in_newmin)/fl_rango;
-    riesgo[1] = ((float)(plaquetas-fl_min_max_plaquetas[0])*factor)+in_newmin;    
-    if (riesgo[1] < 1) riesgo[1]=1;
-    if (riesgo[1] > 5) riesgo[1]=5;
+    riesgo[1]=obtener_riesgo((float)plaquetas,fl_min_max_plaquetas[0],fl_min_max_plaquetas[0],3.0,5.0,1.0,5.0);
     //Como este es un valor al que si es menor implica mas riesgo, hay que invertir el riesgo
     riesgo[1]=6-riesgo[1];
-    printf("\nRango: %f, Factor: %f, Riesgo: %f",fl_rango,factor,riesgo[1]);
-    printf("\nMin Plaquetas: %f, Max Plaquetas: %f, User Value: %i, Risk [1-5]: %f",fl_min_max_plaquetas[0],fl_min_max_plaquetas[1],plaquetas,riesgo[1]);
+    ///printf("\nMin Plaquetas: %f, Max Plaquetas: %f, User Value: %i, Risk [1-5]: %f",fl_min_max_plaquetas[0],fl_min_max_plaquetas[1],plaquetas,riesgo[1]);
     //Creatinina
-    fl_rango=fl_min_max_creatinina[1]-fl_min_max_creatinina[0];
-    factor = (float)(5-in_newmin)/fl_rango;
-    riesgo[2] = ((float)(creatinina-fl_min_max_creatinina[0])*factor)+in_newmin;    
-    if (riesgo[2] < 1) riesgo[2]=1;
-    if (riesgo[2] > 5) riesgo[2]=5;
-    printf("\nRango: %f, Factor: %f, Riesgo: %f",fl_rango,factor,riesgo[2]);
-    printf("\nMin Creatinina: %f, Max Creatinina: %f, User Value: %f, Risk [1-5]: %f",fl_min_max_creatinina[0],fl_min_max_creatinina[1],creatinina,riesgo[2]);
+    riesgo[2]=obtener_riesgo(creatinina,fl_min_max_creatinina[0],fl_min_max_creatinina[0],3.0,5.0,1.0,5.0);
+    //printf("\nMin Creatinina: %f, Max Creatinina: %f, User Value: %f, Risk [1-5]: %f",fl_min_max_creatinina[0],fl_min_max_creatinina[1],creatinina,riesgo[2]);
     //Sodio
-    in_rango=in_min_max_sodio[1]-in_min_max_sodio[0];
-    factor = (float)(5-in_newmin)/(float)in_rango; 
-    riesgo[3] = ((sodio-in_min_max_sodio[0])*factor)+in_newmin;
-    if (riesgo[3] < 1) riesgo[3]=1;
-    if (riesgo[3] > 5) riesgo[3]=5;
+    riesgo[3]=obtener_riesgo((float)sodio,(float)in_min_max_sodio[0],(float)in_min_max_sodio[1],3.0,5.0,1.0,5.0);
     //Como este es un valor al que si es menor implica mas riesgo, hay que invertir el riesgo
     riesgo[3]=6-riesgo[3];
-    printf("\nRango: %i, Factor: %f, Riesgo: %f",in_rango,factor,riesgo[3]);
-    printf("\nMin Sodio: %i, Max Sodio: %i, User Value: %i, Risk [1-5]: %f",in_min_max_sodio[0],in_min_max_sodio[1],sodio,riesgo[3]);
+    //printf("\nMin Sodio: %i, Max Sodio: %i, User Value: %i, Risk [1-5]: %f",in_min_max_sodio[0],in_min_max_sodio[1],sodio,riesgo[3]);
     //Hasta aqui ya estan los 4 riesgos en las diferentes areas, ahora, solo hay que darle al usuario el promedio de estos 4 riesgos
-    
     return ((riesgo[0]+riesgo[1]+riesgo[2]+riesgo[3])/4);
 }
-float obtener_riesgo(float min, float max, float newmin, float newmax, float overflow_max, float overflow_min){
-    
+float obtener_riesgo(float valor, float min, float max, float newmin, float newmax, float overflow_min, float overflow_max){
+    float factor = (newmax-newmin)/(max-min);
+    float riesgo = ((valor-min)*factor)+newmin;
+    if (riesgo<overflow_min)riesgo=overflow_min;
+    if (riesgo>overflow_max)riesgo=overflow_max;
+    return riesgo;
 }
 float *fl_W(int* datos,bool anemia, bool diabetes, bool presion_alta, bool hombre, bool fuma,int edad, int CPK, int plaquetas, float creatinina, int sodio)
 {
@@ -288,7 +250,7 @@ float *fl_W(int* datos,bool anemia, bool diabetes, bool presion_alta, bool hombr
     }
     for (i=0;i<4;i++)fl_media[i]/=Wtotal;
     //memecounter para contar la memoria alocada
-    printf("\n%ld", malloced_memory_usage);
+    //printf("\n%ld", malloced_memory_usage);
     return fl_media;
 }
 char* columna(char* linea,int num_columna){
