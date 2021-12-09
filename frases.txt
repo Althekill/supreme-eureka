@@ -1,0 +1,22 @@
+Inserte la opcion de su preferencia: 
+Inserte su edad: 
+Inserte 1 si padece de anemia, en otro caso inserte 0:
+Inserte 1 si padece de diabetes, en otro caso inserte 0:
+Inserte 1 si padece de presion arterial alta, en otro caso inserte 0:
+Inserte 1 si es hombre, si es mujer inserte 0:
+Inserte 1 si es fumador, en otro caso inserte 0:
+Inserte su nivel de creatinina fosfokinasa:
+Inserte su nivel de plaquetas:
+Inserte su nivel de creatinina en la sangre:
+Inserte su nivel de sodio en la sangre:
+Bienvenido al programa.
+1.-Como funciona el programa
+2.-Ver el código fuente.
+3.-Créditos
+4.-Entrar al programa.
+5.-Salir
+Su riesgo de padecer un ataque al corazon es muy bajo (1)
+Su riesgo de padecer un ataque al corazon es bajo (2)
+Su riesgo de padecer un ataque al corazon es moderado (3)
+Su riesgo de padecer un ataque al corazon es alto (4)
+Su riesgo de padecer un ataque al corazon es muy alto (5)
