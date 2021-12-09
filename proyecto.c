@@ -3,7 +3,7 @@
 #include<stdint.h>
 #include<stdlib.h>
 #include<math.h>
-int menu(void);
+void menu(void);
 char *linea(int linea, char *filename);
 int lineas(int primera,int final,char *archivo);
 int* ordenar(char* base_de_datos,int edad);
@@ -120,13 +120,10 @@ float fl_comparar(float* medias, int CPK, int plaquetas, float creatinina, int s
     //Para compararlas se obtine el valor maximo y minimo de los 4 parametros en la base de datos y se les asigna el valor de 5 y 3 respectivamente
     //El valor medio es 4, un valor menor separado por el mismo intervalo es 2, etc.
     //Tambien hay que tomar en cuenta si los valores altos son peores o mejores
-        int i=0;
+    int i=0;
     while (1){
         char *c=linea(i,"datos.csv");    
-        if (c==0){
-            //Ya se tiene el tamaño de la base de datos
-            break;
-        }
+        if (c==0)break;
         free(c);
         i++;
     }
@@ -212,13 +209,14 @@ float fl_comparar(float* medias, int CPK, int plaquetas, float creatinina, int s
     
     return ((riesgo[0]+riesgo[1]+riesgo[2]+riesgo[3])/4);
 }
+float obtener_riesgo(float min, float max, float newmin, float newmax, float overflow_max, float overflow_min){
+    
+}
 float *fl_W(int* datos,bool anemia, bool diabetes, bool presion_alta, bool hombre, bool fuma,int edad, int CPK, int plaquetas, float creatinina, int sodio)
 {
     //Asignar los pesos, dependiendo de os datos que coincidan
     int i=0;
-    while (datos[i]!=NULL){
-        i++;
-    }
+    while (datos[i]!=0)i++;
     const int in_sizeof_datos=i;
     int database_age[in_sizeof_datos];
     bool database_anemia[in_sizeof_datos];
@@ -232,8 +230,6 @@ float *fl_W(int* datos,bool anemia, bool diabetes, bool presion_alta, bool hombr
     bool database_fuma[in_sizeof_datos];
     bool database_muerte[in_sizeof_datos];
     float W[in_sizeof_datos];
-    linea(datos[i],"datos.csv");
-        printf("%d, ",datos[i]);
     for (i=0;i<in_sizeof_datos;i++){
         char* t = linea(datos[i],"datos.csv");
         //Recorrer la linea, convertir cada valor a su tipo de dato, detenerse en las coma y guardarlo en su respectivo arreglo
@@ -270,10 +266,6 @@ float *fl_W(int* datos,bool anemia, bool diabetes, bool presion_alta, bool hombr
         c=columna(t,8);
         database_creatinina[i]=string_a_float(c);
         free(c);
-        
-        //numero[0]=t[3];
-
-        //database_anemia[i]=string_a_entero
         free(t);
         //Hacer las comparaciones para asignar los pesos a esta linea
         W[i]=1;
@@ -285,10 +277,7 @@ float *fl_W(int* datos,bool anemia, bool diabetes, bool presion_alta, bool hombr
     }
     //Obtener la fl_media de llos daos relevantes
     float* fl_media=(float*)malloc(4*sizeof(float));
-    fl_media[0]=0;
-    fl_media[1]=0;
-    fl_media[2]=0;
-    fl_media[3]=0;
+    for (i=0;i<4;i++)fl_media[i]=0;
     float Wtotal=0;
     for (i=0;i<in_sizeof_datos;i++){
         Wtotal+=W[i];
@@ -297,23 +286,15 @@ float *fl_W(int* datos,bool anemia, bool diabetes, bool presion_alta, bool hombr
         fl_media[2]+=database_sodio[i];
         fl_media[3]+=database_creatinina[i];
     }
-    fl_media[0]/=Wtotal;
-    fl_media[1]/=Wtotal;
-    fl_media[2]/=Wtotal;
-    fl_media[3]/=Wtotal;
-    //funcion de cmemecounter para contar la memoria alocada
+    for (i=0;i<4;i++)fl_media[i]/=Wtotal;
+    //memecounter para contar la memoria alocada
     printf("\n%ld", malloced_memory_usage);
-
     return fl_media;
 }
 char* columna(char* linea,int num_columna){
     //Devuelve la columna de la linea, tomando una , como el separador
     //Iterar los caracteres de la linea, hasta que se encuentre una coma
-    int largo=0;
-    int c=0;
-    int i=0;
-    int d=0;
-    int e=0;
+    int largo=0, c=0, i=0, d=0, e=0;
     for (i=0;c<num_columna;i++){
         if (linea[i]==',' | linea[i]=='\n'){
             c++;
@@ -325,84 +306,18 @@ char* columna(char* linea,int num_columna){
         }
     }
     if (num_columna!=1)d++;//quitar la coma que sale al inicio
-    //if (num_columna==13)e-=1;//Remueve el '\n' al final
     largo=e-d;
     char *devuelve = (char*)malloc(largo+1);
-    for (i=d;i<e;i++){
-        devuelve[i-d]=linea[i];
-    }
+    for (i=d;i<e;i++)devuelve[i-d]=linea[i];
     devuelve[largo]='\0';
     return devuelve;
 }
-
 float string_a_float(char* str){
-    int i=0;
-    int size=0;
-    int p=0;
-    int parte_entera=0;
-    while (str[i]!='\0'){
-        if (str[i]=='.')p++;
-        //el rango de numeros en ASCII es 48-57 (0-9), y  el punto es 46
-        if (!((int)str[i]<=57|(int)str[i]>=48|(int)str[i]==46)){
-            error("El string no esta compuesto unicamente de numeros y punto",1);
-        }
-        i+=1;
-        }
-    size=i;
-    //no hay punto decimal
-    if (p==0){
-        return (float)string_a_entero(str);
-        }
-    else if (p>1){
-        return (float)error("Error, el numero tiene mas de un punto decimal",1);
-    }
-    i=0;
-    while (str[i]!='.'){
-        i++;
-    }
-    char *entero = (char*)malloc(i+1);
-    for (int b=0;b<i;b++){
-        entero[b]=str[b];
-        }
-        entero[i]='\0';
-    parte_entera=string_a_entero(entero);
-    free(entero);
-    char* decimal=(char*)malloc(size-i);
-    for (int b=i+1;b<size;b++){
-        decimal[b-i-1]=str[b];
-        }
-        decimal[size-i-1]='\0';
-    float parte_decimal=(float)string_a_entero(decimal);
-    parte_decimal = parte_decimal/pow(10,(size-i-1));
-    float resultado=parte_decimal+parte_entera;
-    return resultado;
-    
+    return atof(str);
 }
-
 int string_a_entero(char* str){
-    //verificar que el string solo contenga numeros
-    int i=0;
-    while (str[i]!='\0'){
-        //el rango de numeros en ASCII es 48-57 (0-9)
-        if ((int)str[i]>57|(int)str[i]<48){
-        printf("\n%s\n",str);
-        return error("El string no esta compuesto unicamente de numeros",0);
-        }
-        i++;
-    }
-    int longitud = i;
-    int retorna=0;
-    //Convertir a entero con un for loop en donde cada char se multiplica por 10^i y se suma
-    //printf("%i\n",longitud);
-    for (i=0;i<longitud;i++){
-        retorna+= ((int)str[i]-48)*pow(10,longitud-i-1);
-    }
-    //printf("%s = %i\n",str,retorna);
-    return retorna;
+    return atoi(str);
 }
-/*struct nodo{
-
-}*/
 int* ordenar(char* base_de_datos,int edad){
     int i=0;
     //Crear un array conteniendo un par de numeros: la edad y la linea en que se encuentra
@@ -417,18 +332,15 @@ int* ordenar(char* base_de_datos,int edad){
         i++;
     }
     const int database_size=i-2;
-    printf("%d\n",database_size);
     //cada entrada del arreglo tiene dos datos: el numero para ordenar (edad) y la linea en que se encuentra
     int arreglo_a_ordenar[database_size][2];
     i=2;
     while(1){
     char *c=linea(i,base_de_datos);
-    if (c==0){
-        break;
-    }
+    if (c==0)break;
     //El rango de edades solo es de dos dígitos, ademas esta primero en la base de datos
     char e[2]={c[0],c[1]};
-    //printf("\n%s\n",e);
+    free(c);
     int edad= string_a_entero(e);
     arreglo_a_ordenar[i-2][0]=edad;
     arreglo_a_ordenar[i-2][1]=i;
@@ -452,11 +364,7 @@ int* ordenar(char* base_de_datos,int edad){
     }
     i++;
     }
-    /*
-    for (int a=0;a<database_size;a++){
-        printf("\n%i, %i",arreglo_a_ordenar[a][0],arreglo_a_ordenar[a][1]);
-    }*/
-    ////Aqui el arreglo ya esta ordenado, ahora hay que filtrar las edades, devolviendo los datos para esa edad, unaedad menor y una edad mayor
+    ////Aqui el arreglo ya esta ordenado, ahora hay que filtrar las edades, devolviendo los datos para esa edad, una edad menor y una edad mayor
     int w=0;
     int diferentes_edades=0;
     for (i=0;i<database_size;i++){
@@ -508,21 +416,18 @@ int* ordenar(char* base_de_datos,int edad){
     for (i=m;i<M;i++){
         retorna[i-m]=arreglo_a_ordenar[i][1];
     }
-    //Asi se puede marcar el final del arreglo
-    retorna[data_length]=NULL;
-    printf("\n%ld", malloced_memory_usage);
+    //Asi se puede marcar el final del arreglo, pues no hay una linea 0
+    retorna[data_length]=0;
+    //printf("\n%ld", malloced_memory_usage);
     return retorna;  
 }
-
 int lineas(int primera,int final,char *archivo){
     int i=0;
     for (i=primera;i<=final;i++){
         char *c=linea(i,archivo);
-
-    if(c!=0){
+    if((int)c[0]!=0){
         printf("%s",c);
         free(c);
-        //printf("\n%ld", malloced_memory_usage);
         }
     else break;
     } 
@@ -533,26 +438,15 @@ printf("%s\n",mensaje);
 exit(code);
 return code;
 }
-/*
-struct string
-{
-char chunk[30];
-int *link;
-};
-*/
 char *linea(int linea, char *filename){
 FILE *file;
-
 if ((file = fopen(filename,"r")) == NULL){
 error("Problema Abriedo el archivo",-1);
 return filename;
 }
 //Devuelve la línea del archivo con nombre filename como un puntero a un char
-
-char c=' ';
-int line=0;
-int start=0;
-int end=0;
+char c;
+int line=0, start=0, end=0;
 while(line!=linea){
 c=' ';
 start=end;
@@ -563,33 +457,23 @@ end++;
 if (feof(file)){
     //terminó de leer
     fclose(file); 
-    //printf("FIN");
     return 0;
 }
-///printf("%c",c);
 }
 line++;
 }
-//printf("start:%d, end:%d\n",start,end);
 const int longitud= end-start;
 char *devuelve=(char*)malloc(sizeof(char)*longitud+1);//lONGITUD+1 PORQUE TAMBIEN SE TOMA EN CUENTA EL CARACTER NULL FINAL DEL STRING
-//char devuelve[longitud];
-int i=0;
 fseek(file,start,SEEK_SET);
-for (i=0;i<longitud;i++){
+for (int i=0;i<longitud;i++){
 fseek(file,0,SEEK_CUR);
 fread(&devuelve[i],1,1,file);
 }
 fclose(file);
-devuelve[longitud]='\0';
-//getchar();
+devuelve[longitud]='\0';//Caracter nulo para finalizar el string
 return devuelve;
 }
-
-
-int menu(){
+void menu(){
 //Imprime en pantalla todas las entradas del menu, guardadas en menu.txt
-//Devuelve la cantidad de entradas en el menú
 lineas(12,17,"frases.txt");
-return 0;
 }
