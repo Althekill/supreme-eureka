@@ -1,11 +1,15 @@
-//#include "cmemcounter.h"
 #include <stdio.h>
 #include<stdint.h>
 #include<stdlib.h>
 #include<math.h>
-void menu(void);
+//Los nombres de las bases de datos
+char ch_nombre_de_base_de_datos[10]="datos.csv";
+char ch_frases[11]="frases.txt";
+
+//Definicion de las funciones
+void vo_menu(void);
 char *linea(int linea, char *filename);
-int lineas(int primera,int final,char *archivo);
+int in_lineas(int primera,int final,char *archivo);
 int* ordenar(char* base_de_datos,int edad);
 int error(char *mensaje,int code);
 int string_a_entero(char* str);
@@ -13,7 +17,8 @@ float string_a_float(char* str);
 char* columna(char* linea,int num_columna);
 float fl_comparar(float* medias, int CPK, int plaquetas, float creatinina, int sodio);
 float obtener_riesgo(float valor, float min, float max, float newmin, float newmax, float overflow_max, float overflow_min);
-void start();
+void vo_start();
+//Definicion del tipo de dato bool como un entero de 8 bits, que ocupa menos memoria
 typedef uint8_t bool;
 float *fl_W(int* datos,bool anemia, bool diabetes, bool presion_alta, bool hombre, bool fuma,int edad, int CPK, int plaquetas, float creatinina, int sodio);
 int main(){
@@ -22,15 +27,17 @@ uint8_t z=0;
 while (!z)
 { 
 //Primero el menú
-menu();
-char *w = linea(1,"frases.txt");
+vo_menu();
+char *w = linea(1,ch_frases);
 printf("\n%s\n",w);
+//Cada que se llama a linea, se de liberar, pues usa malloc
 free(w);
 int opcion;
+//Recibe un numero del usuario
 scanf("%i",&opcion);
 switch (opcion){
     case 1:
-        //system("");
+        system("cat info.txt");
         break;
     case 2:
         system("cat proyecto.c");
@@ -38,7 +45,7 @@ switch (opcion){
     case 3:
         break;
     case 4:
-        start();
+        vo_start();
         break;
     case 5:
         z=1;
@@ -50,7 +57,7 @@ switch (opcion){
 }
 return 0;
 }
-void start(){
+void vo_start(){
     //Pedir los datos
     bool x[5];
     uint8_t edad;
@@ -65,33 +72,36 @@ void start(){
     //Nivel bajo es peor
     int serum_sodium=0;//Sodio en la sangre
     int time=0;//Indica el tiempo de seguimiento tras el ataque, no se utiliza
-    printf("%s",linea(2,"frases.txt")); 
+    printf("%s",linea(2,ch_frases)); 
     scanf("%hhi",&edad);
     for (int i=0;i<5;i++){
-       char *str=linea(3+i,"frases.txt");
+       char *str=linea(3+i,ch_frases);
        printf("%s",str); 
        free(str);
        scanf("%i",&si);
        x[i]= si;
     }
     //Tomar las otras medidas
-    printf("\n%s",linea(8,"frases.txt")); 
+    printf("\n%s",linea(8,ch_frases)); 
     scanf("%i",&creatinine_phosphokinase);
-    printf("\n%s",linea(9,"frases.txt")); 
+    printf("\n%s",linea(9,ch_frases)); 
     scanf("%i",&platelets);
-    printf("\n%s",linea(10,"frases.txt")); 
+    printf("\n%s",linea(10,ch_frases)); 
     scanf("%f",&serum_creatinine);
-    printf("\n%s",linea(11,"frases.txt")); 
+    printf("\n%s",linea(11,ch_frases)); 
     scanf("%i",&serum_sodium);
     //Tomar las edades mayores y menores de la base de datos
     //La base de datos aun no esta parseada, ni ordenada, asi que toca ordenar para obtener los datos necesarios
-    int *orden = ordenar("datos.csv",edad);
+    int *orden = ordenar(ch_nombre_de_base_de_datos,edad);
+    //Ya ordenada, se calculan las medias, pasando el arreglo que contiene las posiciones de los datos ordenados por edad
     float *fl_medias = fl_W(orden,x[0],x[1],x[2],x[3],x[4],edad,creatinine_phosphokinase,platelets,serum_creatinine,serum_sodium);
+    //Aqui ya se calcularon las 4 medias de cada parametro, las cuales se van a comparar con los datos del usuario.
     float fl_riesgo_final=fl_comparar(fl_medias,creatinine_phosphokinase,platelets,serum_creatinine,serum_sodium);
+    //Aqui solo se va a imprimir los resultados en pantalla
     char *salida;
     int i;
     i=17+(int)roundf(fl_riesgo_final);
-    salida=linea(i,"frases.txt");
+    salida=linea(i,ch_frases);
     printf("\n%s",salida);
     free(salida);
 }
@@ -102,7 +112,7 @@ float fl_comparar(float* medias, int CPK, int plaquetas, float creatinina, int s
     //Tambien hay que tomar en cuenta si los valores altos son peores o mejores
     int i=0;
     while (1){
-        char *c=linea(i,"datos.csv");    
+        char *c=linea(i,ch_nombre_de_base_de_datos);    
         if (c==0)break;
         free(c);
         i++;
@@ -114,7 +124,7 @@ float fl_comparar(float* medias, int CPK, int plaquetas, float creatinina, int s
     int in_min_max_sodio[2]={1000000,0};//Menor es peor
     //Obtiene el valor maximo y minimo de cada parametro
     for (i=2;i<in_database_size;i++){ //i=2 porque la primera linea es de texto
-    char* t = linea(i,"datos.csv");
+    char* t = linea(i,ch_nombre_de_base_de_datos);
     char *c=columna(t,3);
     int x =string_a_entero(c);
     if(in_min_max_CPK[0]>x)in_min_max_CPK[0]=x;
@@ -164,10 +174,16 @@ float fl_comparar(float* medias, int CPK, int plaquetas, float creatinina, int s
     //Como este es un valor al que si es menor implica mas riesgo, hay que invertir el riesgo
     riesgo[3]=6-riesgo[3];
     //printf("\nMin Sodio: %i, Max Sodio: %i, User Value: %i, Risk [1-5]: %f",in_min_max_sodio[0],in_min_max_sodio[1],sodio,riesgo[3]);
-    //Hasta aqui ya estan los 4 riesgos en las diferentes areas, ahora, solo hay que darle al usuario el promedio de estos 4 riesgos
-    return ((riesgo[0]+riesgo[1]+riesgo[2]+riesgo[3])/4);
+    //Hasta aqui ya estan los 4 riesgos en las diferentes areas, ahora, solo hay que darle al usuario el mayor de estos 4 riesgos
+    float fl_retorna=riesgo[0];
+    fl_retorna<riesgo[1] ? riesgo[1]: fl_retorna;
+    fl_retorna<riesgo[2] ? riesgo[2]: fl_retorna;
+    fl_retorna<riesgo[3] ? riesgo[3]: fl_retorna;
+    fl_retorna<riesgo[4] ? riesgo[4]: fl_retorna;
+    return fl_retorna;
 }
 float obtener_riesgo(float valor, float min, float max, float newmin, float newmax, float overflow_min, float overflow_max){
+    //Convierrte un rango de valores en otro, tambien se podria haber usado map(), pero aqui se pone un limite del que no se puede salir [1-5]
     float factor = (newmax-newmin)/(max-min);
     float riesgo = ((valor-min)*factor)+newmin;
     if (riesgo<overflow_min)riesgo=overflow_min;
@@ -193,7 +209,7 @@ float *fl_W(int* datos,bool anemia, bool diabetes, bool presion_alta, bool hombr
     bool database_muerte[in_sizeof_datos];
     float W[in_sizeof_datos];
     for (i=0;i<in_sizeof_datos;i++){
-        char* t = linea(datos[i],"datos.csv");
+        char* t = linea(datos[i],ch_nombre_de_base_de_datos);
         //Recorrer la linea, convertir cada valor a su tipo de dato, detenerse en las coma y guardarlo en su respectivo arreglo
         char* c=columna(t,1);
         database_age[i]=string_a_entero(c);
@@ -271,6 +287,7 @@ char* columna(char* linea,int num_columna){
     largo=e-d;
     char *devuelve = (char*)malloc(largo+1);
     for (i=d;i<e;i++)devuelve[i-d]=linea[i];
+    //Fin de la linea, es ncesario, sino se confunde al programa
     devuelve[largo]='\0';
     return devuelve;
 }
@@ -383,7 +400,8 @@ int* ordenar(char* base_de_datos,int edad){
     //printf("\n%ld", malloced_memory_usage);
     return retorna;  
 }
-int lineas(int primera,int final,char *archivo){
+int in_lineas(int primera,int final,char *archivo){
+    //Imprime el rango de lineas indicado
     int i=0;
     for (i=primera;i<=final;i++){
         char *c=linea(i,archivo);
@@ -396,11 +414,13 @@ int lineas(int primera,int final,char *archivo){
     return i;
 }
 int error(char *mensaje,int code){
+//Funcion de error, por si hay algun error para abrir el archivo
 printf("%s\n",mensaje);
 exit(code);
 return code;
 }
 char *linea(int linea, char *filename){
+//Guarda la linea indicada del archivo en un puntero
 FILE *file;
 if ((file = fopen(filename,"r")) == NULL){
 error("Problema Abriedo el archivo",-1);
@@ -412,6 +432,7 @@ int line=0, start=0, end=0;
 while(line!=linea){
 c=' ';
 start=end;
+//Iterar hasta llegar al caracter de fin delinea
 while (c!='\n'){
 fseek(file, 0, SEEK_CUR);
 fread(&c,1,1,file);
@@ -435,7 +456,7 @@ fclose(file);
 devuelve[longitud]='\0';//Caracter nulo para finalizar el string
 return devuelve;
 }
-void menu(){
+void vo_menu(){
 //Imprime en pantalla todas las entradas del menu, guardadas en menu.txt
-lineas(12,17,"frases.txt");
+in_lineas(12,17,ch_frases);
 }

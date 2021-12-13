@@ -16,6 +16,7 @@
         "functional": "c",
         "tuple": "c",
         "stdlib.h": "c",
-        "linea": "c"
+        "linea": "c",
+        "cstdlib": "c"
     }
 }

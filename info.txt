@@ -1,0 +1,30 @@
+1MM2
+Segura Zequeira Alejandro
+Ingeniería Mecatrónica
+Boleta: 2022680159
+Correo: ale.school.cecyt@gmail.com
+Materia: Introducción a la programación
+
+III      PPPPPPPPPPPP    NNN        NNN
+III      PPP      PPP    NNN N      NNN
+III      PPP      PPP    NNN  N     NNN
+III      PPP      PPP    NNN   N    NNN
+III      PPPPPPPPPPPP    NNN    N   NNN
+III      PPP             NNN     N  NNN
+III      PPP             NNN      N NNN
+III      PPP             NNN        NNN
+
+
+
+Bienvenido al programa.
+Este es un predictor de su riesgo de padecer un ataque al corazon, basado en el estudio 
+"Davide Chicco, Giuseppe Jurman: Machine learning can predict survival of patients with heart failure from serum creatinine and ejection fraction alone. BMC Medical Informatics and Decision Making 20, 16 (2020).  Sitio Web: https://bmcmedinformdecismak.biomedcentral.com/articles/10.1186/s12911-020-1023-5 "
+La base de datos contiene 13 parametros de 300 personas que sufrieron un ataque al corazon.
+Usted debe ingresar los datos que se solicitan. Los cuales obtuvo haciendo los examenes correspondientes.
+A partir de estos datos, el programa selecciona de la base de datos selectivamente aquellos que coinciden con lo que ingreso.
+En concreto, seleccionara los datos en los que su edad coincida, junto con los datos de una edad mayor y los datos de una edad menor.
+Tras esto, el programa analiza esta seccion de datos y le asigna un peso a cada paciente, denominado Wi, aquellos pacientes que tienen mas en comun con usted, en las categorias de 
+anemia, diabetes, presion alte, sexo y habitos de fumar. A los parametros de estos pacientes se les aumenta el Wi dependiendo de cuantas categorias tiene en comun.
+Posteriormente, el programa obtiene la media de cada parametro faltante (CPK, plaquetas, creatinina en la sangre y sodio en la sangre) utilizando los pesos que se asignaron.Con la formula 
+(W1*dato1+W2*dato2 ... +Wi*datoi)/(W1+W2 ... +Wi).
+Con estas 4 medias, el programa compara sus datos; a partir de esto le asigna un valor de riesgo [1,5] para cada parametro y le devuelve el mayor de estos riesgos.
